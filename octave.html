@@ -1,0 +1,1648 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OCTAVE Risk Assessment Tool</title>
+  <!-- Include jsPDF Library for PDF export -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+      :root {
+          --primary: #2c3e50;
+          --secondary: #3498db;
+          --success: #27ae60;
+          --warning: #f39c12;
+          --danger: #e74c3c;
+          --light: #ecf0f1;
+          --dark: #34495e;
+      }
+      
+      * {
+          margin: 0;
+          padding: 0;
+          box-sizing: border-box;
+          font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      }
+      
+      body {
+          background-color: #f5f5f5;
+          color: #333;
+      }
+      
+      .container {
+          max-width: 1200px;
+          margin: 0 auto;
+          padding: 20px;
+      }
+      
+      header {
+          background-color: var(--primary);
+          color: white;
+          padding: 15px 20px;
+          border-radius: 5px;
+          margin-bottom: 20px;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+      }
+      
+      header h1 {
+          font-size: 1.8rem;
+      }
+      
+      nav {
+          background-color: var(--dark);
+          border-radius: 5px;
+          margin-bottom: 20px;
+      }
+      
+      .tabs {
+          display: flex;
+          list-style: none;
+          overflow-x: auto;
+      }
+      
+      .tabs li {
+          padding: 12px 15px;
+          cursor: pointer;
+          color: white;
+          transition: background-color 0.3s;
+          white-space: nowrap;
+      }
+      
+      .tabs li:hover {
+          background-color: rgba(255, 255, 255, 0.1);
+      }
+      
+      .tabs li.active {
+          background-color: var(--secondary);
+          font-weight: bold;
+      }
+      
+      .tab-content {
+          display: none;
+          animation: fadeIn 0.5s;
+      }
+      
+      .tab-content.active {
+          display: block;
+      }
+      
+      @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+      }
+      
+      .card {
+          background-color: white;
+          border-radius: 5px;
+          box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+          padding: 20px;
+          margin-bottom: 20px;
+      }
+      
+      .card h2 {
+          color: var(--primary);
+          margin-bottom: 15px;
+          border-bottom: 1px solid #eee;
+          padding-bottom: 10px;
+      }
+      
+      .form-group {
+          margin-bottom: 15px;
+      }
+      
+      label {
+          display: block;
+          margin-bottom: 5px;
+          font-weight: 500;
+      }
+      
+      input[type="text"], 
+      input[type="number"],
+      select, 
+      textarea {
+          width: 100%;
+          padding: 10px;
+          border: 1px solid #ddd;
+          border-radius: 4px;
+          font-size: 1rem;
+      }
+      
+      textarea {
+          min-height: 100px;
+          resize: vertical;
+      }
+      
+      .btn {
+          display: inline-block;
+          padding: 10px 20px;
+          background-color: var(--secondary);
+          color: white;
+          border: none;
+          border-radius: 4px;
+          cursor: pointer;
+          font-size: 1rem;
+          transition: background-color 0.3s;
+      }
+      
+      .btn:hover {
+          background-color: #2980b9;
+      }
+      
+      .btn-success {
+          background-color: var(--success);
+      }
+      
+      .btn-success:hover {
+          background-color: #219653;
+      }
+      
+      .btn-danger {
+          background-color: var(--danger);
+      }
+      
+      .btn-danger:hover {
+          background-color: #c0392b;
+      }
+      
+      .btn-warning {
+          background-color: var(--warning);
+      }
+      
+      .btn-warning:hover {
+          background-color: #d35400;
+      }
+      
+      .actions {
+          display: flex;
+          justify-content: space-between;
+          margin-top: 20px;
+      }
+      
+      .table {
+          width: 100%;
+          border-collapse: collapse;
+          margin-bottom: 20px;
+      }
+      
+      .table th, .table td {
+          padding: 12px 15px;
+          text-align: left;
+          border-bottom: 1px solid #ddd;
+      }
+      
+      .table th {
+          background-color: var(--light);
+          font-weight: bold;
+      }
+      
+      .table tr:hover {
+          background-color: #f5f5f5;
+      }
+      
+      .badge {
+          display: inline-block;
+          padding: 5px 8px;
+          border-radius: 4px;
+          font-size: 0.8rem;
+          font-weight: bold;
+          color: white;
+      }
+      
+      .badge-high {
+          background-color: var(--danger);
+      }
+      
+      .badge-medium {
+          background-color: var(--warning);
+      }
+      
+      .badge-low {
+          background-color: var(--success);
+      }
+      
+      .progress-container {
+          display: flex;
+          margin-bottom: 20px;
+          background-color: var(--light);
+          border-radius: 5px;
+          overflow: hidden;
+      }
+      
+      .progress-step {
+          flex: 1;
+          padding: 10px;
+          text-align: center;
+          background-color: var(--light);
+          font-size: 0.9rem;
+          transition: background-color 0.3s;
+      }
+      
+      .progress-step.completed {
+          background-color: var(--success);
+          color: white;
+      }
+      
+      .progress-step.active {
+          background-color: var(--secondary);
+          color: white;
+          font-weight: bold;
+      }
+      
+      .add-item-row {
+          display: flex;
+          gap: 10px;
+          margin-bottom: 15px;
+      }
+      
+      .add-item-row input, .add-item-row select {
+          flex: 1;
+      }
+      
+      .matrix {
+          display: grid;
+          grid-template-columns: repeat(5, 1fr);
+          gap: 5px;
+          margin-bottom: 20px;
+      }
+      
+      .matrix-cell {
+          padding: 10px;
+          text-align: center;
+          border-radius: 4px;
+          cursor: pointer;
+          transition: all 0.3s;
+      }
+      
+      .matrix-cell:hover {
+          transform: scale(1.05);
+      }
+      
+      .matrix-header {
+          background-color: var(--primary);
+          color: white;
+          font-weight: bold;
+      }
+      
+      .risk-critical {
+          background-color: #7f0000;
+          color: white;
+      }
+      
+      .risk-high {
+          background-color: var(--danger);
+          color: white;
+      }
+      
+      .risk-medium {
+          background-color: var(--warning);
+          color: white;
+      }
+      
+      .risk-low {
+          background-color: var(--success);
+          color: white;
+      }
+      
+      .risk-negligible {
+          background-color: #afe7ba;
+          color: #333;
+      }
+      
+      .info-box {
+          background-color: #d1ecf1;
+          border: 1px solid #bee5eb;
+          color: #0c5460;
+          padding: 15px;
+          border-radius: 4px;
+          margin-bottom: 15px;
+      }
+      
+      .exportButtons {
+          margin-bottom: 20px;
+      }
+      
+      @media (max-width: 768px) {
+          .tabs {
+              flex-direction: column;
+          }
+          
+          .add-item-row {
+              flex-direction: column;
+          }
+          
+          .actions {
+              flex-direction: column;
+              gap: 10px;
+          }
+          
+          .actions .btn {
+              width: 100%;
+          }
+          
+          .matrix {
+              grid-template-columns: repeat(3, 1fr);
+          }
+      }
+  </style>
+</head>
+<body>
+  <header>
+      <h1>OCTAVE Risk Assessment Tool</h1>
+      <div>
+          <button id="saveDataBtn" class="btn">Save Data</button>
+          <button id="loadDataBtn" class="btn">Load Data</button>
+      </div>
+  </header>
+  
+  <div class="container">
+      <div class="info-box">
+          <p><strong>About OCTAVE:</strong> The Operationally Critical Threat, Asset, and Vulnerability Evaluation (OCTAVE) is a suite of tools, techniques, and methods for risk-based information security strategic assessment and planning.</p>
+      </div>
+      
+      <div class="progress-container">
+          <div class="progress-step active" data-step="intro">Introduction</div>
+          <div class="progress-step" data-step="assets">Asset Identification</div>
+          <div class="progress-step" data-step="threats">Threat Analysis</div>
+          <div class="progress-step" data-step="vulnerabilities">Vulnerabilities</div>
+          <div class="progress-step" data-step="risks">Risk Assessment</div>
+          <div class="progress-step" data-step="mitigation">Mitigation Planning</div>
+          <div class="progress-step" data-step="reports">Reports</div>
+      </div>
+      
+      <nav>
+          <ul class="tabs">
+              <li class="tab-link active" data-tab="intro">Introduction</li>
+              <li class="tab-link" data-tab="assets">Asset Identification</li>
+              <li class="tab-link" data-tab="threats">Threat Analysis</li>
+              <li class="tab-link" data-tab="vulnerabilities">Vulnerabilities</li>
+              <li class="tab-link" data-tab="risks">Risk Assessment</li>
+              <li class="tab-link" data-tab="mitigation">Mitigation Planning</li>
+              <li class="tab-link" data-tab="reports">Reports & Export</li>
+          </ul>
+      </nav>
+      
+      <!-- Introduction Tab -->
+      <div id="intro" class="tab-content active">
+          <div class="card">
+              <h2>Welcome to the OCTAVE Risk Assessment Tool</h2>
+              <p>This tool will guide you through the OCTAVE methodology for risk assessment, helping you identify and manage information security risks in your organization.</p>
+              <p>The OCTAVE approach is characterized by:</p>
+              <ul style="margin-left: 20px; margin-top: 10px; margin-bottom: 10px; line-height: 1.5;">
+                  <li>Self-directed approach</li>
+                  <li>Organizational and technological issues</li>
+                  <li>Strategic and operational focus</li>
+                  <li>Three-phase process</li>
+              </ul>
+              <p>To get started, follow these steps:</p>
+              <ol style="margin-left: 20px; margin-top: 10px; margin-bottom: 15px; line-height: 1.5;">
+                  <li>Complete the organization profile below</li>
+                  <li>Navigate through each tab to document assets, threats, vulnerabilities, and risks</li>
+                  <li>Develop mitigation strategies</li>
+                  <li>Generate final reports</li>
+              </ol>
+              
+              <form id="organizationForm">
+                  <div class="form-group">
+                      <label for="orgName">Organization Name:</label>
+                      <input type="text" id="orgName" name="orgName" required>
+                  </div>
+                  <div class="form-group">
+                      <label for="department">Department/Division:</label>
+                      <input type="text" id="department" name="department">
+                  </div>
+                  <div class="form-group">
+                      <label for="assessor">Assessment Lead:</label>
+                      <input type="text" id="assessor" name="assessor" required>
+                  </div>
+                  <div class="form-group">
+                      <label for="assessmentDate">Assessment Date:</label>
+                      <input type="date" id="assessmentDate" name="assessmentDate" required>
+                  </div>
+                  <div class="form-group">
+                      <label for="scope">Assessment Scope:</label>
+                      <textarea id="scope" name="scope" placeholder="Define the boundaries of this assessment..."></textarea>
+                  </div>
+                  
+                  <div class="actions">
+                      <div></div>
+                      <button type="button" class="btn btn-success" id="nextToAssets">Save and Continue</button>
+                  </div>
+              </form>
+          </div>
+      </div>
+      
+      <!-- Asset Identification Tab -->
+      <div id="assets" class="tab-content">
+          <div class="card">
+              <h2>Asset Identification</h2>
+              <p>Identify and categorize your critical information assets. These are information, systems, or services that are essential to your organization's mission.</p>
+              
+              <div class="form-group">
+                  <div class="add-item-row">
+                      <input type="text" id="assetName" placeholder="Asset Name">
+                      <select id="assetType">
+                          <option value="">Select Asset Type</option>
+                          <option value="Information">Information</option>
+                          <option value="Systems">Systems</option>
+                          <option value="Software">Software</option>
+                          <option value="Hardware">Hardware</option>
+                          <option value="People">People</option>
+                      </select>
+                      <select id="assetCriticality">
+                          <option value="">Criticality</option>
+                          <option value="Critical">Critical</option>
+                          <option value="High">High</option>
+                          <option value="Medium">Medium</option>
+                          <option value="Low">Low</option>
+                      </select>
+                      <button type="button" class="btn" id="addAssetBtn">Add Asset</button>
+                  </div>
+              </div>
+              
+              <div>
+                  <table class="table" id="assetsTable">
+                      <thead>
+                          <tr>
+                              <th>Asset Name</th>
+                              <th>Type</th>
+                              <th>Criticality</th>
+                              <th>Actions</th>
+                          </tr>
+                      </thead>
+                      <tbody>
+                          <!-- Asset list will be generated here -->
+                      </tbody>
+                  </table>
+              </div>
+              
+              <div class="actions">
+                  <button type="button" class="btn" id="backToIntro">Back</button>
+                  <button type="button" class="btn btn-success" id="nextToThreats">Continue</button>
+              </div>
+          </div>
+      </div>
+      
+      <!-- Threat Analysis Tab -->
+      <div id="threats" class="tab-content">
+          <div class="card">
+              <h2>Threat Analysis</h2>
+              <p>Identify potential threats to your critical assets. Consider various threat categories such as natural disasters, human errors, technical failures, and deliberate attacks.</p>
+              
+              <div class="form-group">
+                  <div class="add-item-row">
+                      <select id="threatAsset">
+                          <option value="">Select Asset</option>
+                          <!-- Assets will be populated here -->
+                      </select>
+                      <input type="text" id="threatName" placeholder="Threat Description">
+                      <select id="threatCategory">
+                          <option value="">Category</option>
+                          <option value="Human - Intentional">Human - Intentional</option>
+                          <option value="Human - Unintentional">Human - Unintentional</option>
+                          <option value="Technical">Technical</option>
+                          <option value="Natural">Natural</option>
+                          <option value="Physical">Physical</option>
+                      </select>
+                      <select id="threatLikelihood">
+                          <option value="">Likelihood</option>
+                          <option value="Very High">Very High</option>
+                          <option value="High">High</option>
+                          <option value="Medium">Medium</option>
+                          <option value="Low">Low</option>
+                          <option value="Very Low">Very Low</option>
+                      </select>
+                      <button type="button" class="btn" id="addThreatBtn">Add Threat</button>
+                  </div>
+              </div>
+              
+              <div>
+                  <table class="table" id="threatsTable">
+                      <thead>
+                          <tr>
+                              <th>Asset</th>
+                              <th>Threat</th>
+                              <th>Category</th>
+                              <th>Likelihood</th>
+                              <th>Actions</th>
+                          </tr>
+                      </thead>
+                      <tbody>
+                          <!-- Threat list will be generated here -->
+                      </tbody>
+                  </table>
+              </div>
+              
+              <div class="actions">
+                  <button type="button" class="btn" id="backToAssets">Back</button>
+                  <button type="button" class="btn btn-success" id="nextToVulnerabilities">Continue</button>
+              </div>
+          </div>
+      </div>
+      
+      <!-- Vulnerabilities Tab -->
+      <div id="vulnerabilities" class="tab-content">
+          <div class="card">
+              <h2>Vulnerability Identification</h2>
+              <p>Identify vulnerabilities in your assets that could be exploited by the threats you've identified.</p>
+              
+              <div class="form-group">
+                  <div class="add-item-row">
+                      <select id="vulnAsset">
+                          <option value="">Select Asset</option>
+                          <!-- Assets will be populated here -->
+                      </select>
+                      <select id="vulnThreat">
+                          <option value="">Select Related Threat</option>
+                          <!-- Threats will be populated here -->
+                      </select>
+                      <input type="text" id="vulnName" placeholder="Vulnerability Description">
+                      <select id="vulnSeverity">
+                          <option value="">Severity</option>
+                          <option value="Critical">Critical</option>
+                          <option value="High">High</option>
+                          <option value="Medium">Medium</option>
+                          <option value="Low">Low</option>
+                      </select>
+                      <button type="button" class="btn" id="addVulnBtn">Add Vulnerability</button>
+                  </div>
+              </div>
+              
+              <div>
+                  <table class="table" id="vulnerabilitiesTable">
+                      <thead>
+                          <tr>
+                              <th>Asset</th>
+                              <th>Related Threat</th>
+                              <th>Vulnerability</th>
+                              <th>Severity</th>
+                              <th>Actions</th>
+                          </tr>
+                      </thead>
+                      <tbody>
+                          <!-- Vulnerability list will be generated here -->
+                      </tbody>
+                  </table>
+              </div>
+              
+              <div class="actions">
+                  <button type="button" class="btn" id="backToThreats">Back</button>
+                  <button type="button" class="btn btn-success" id="nextToRisks">Continue</button>
+              </div>
+          </div>
+      </div>
+      
+      <!-- Risk Assessment Tab -->
+      <div id="risks" class="tab-content">
+          <div class="card">
+              <h2>Risk Assessment Matrix</h2>
+              <p>Based on the threats and vulnerabilities identified, assess the likelihood and impact of each risk scenario.</p>
+              
+              <div class="form-group">
+                  <div class="add-item-row">
+                      <select id="riskAsset">
+                          <option value="">Select Asset</option>
+                          <!-- Assets will be populated here -->
+                      </select>
+                      <select id="riskVulnerability">
+                          <option value="">Select Vulnerability</option>
+                          <!-- Vulnerabilities will be populated here -->
+                      </select>
+                      <input type="text" id="riskDescription" placeholder="Risk Scenario Description">
+                      <select id="riskLikelihood">
+                          <option value="">Likelihood</option>
+                          <option value="5">Almost Certain (5)</option>
+                          <option value="4">Likely (4)</option>
+                          <option value="3">Possible (3)</option>
+                          <option value="2">Unlikely (2)</option>
+                          <option value="1">Rare (1)</option>
+                      </select>
+                      <select id="riskImpact">
+                          <option value="">Impact</option>
+                          <option value="5">Catastrophic (5)</option>
+                          <option value="4">Major (4)</option>
+                          <option value="3">Moderate (3)</option>
+                          <option value="2">Minor (2)</option>
+                          <option value="1">Insignificant (1)</option>
+                      </select>
+                      <button type="button" class="btn" id="addRiskBtn">Add Risk</button>
+                  </div>
+              </div>
+              
+              <h3>Risk Matrix</h3>
+              <div class="matrix">
+                  <div class="matrix-cell matrix-header">Impact →<br>Likelihood ↓</div>
+                  <div class="matrix-cell matrix-header">Insignificant (1)</div>
+                  <div class="matrix-cell matrix-header">Minor (2)</div>
+                  <div class="matrix-cell matrix-header">Moderate (3)</div>
+                  <div class="matrix-cell matrix-header">Major (4)</div>
+                  <div class="matrix-cell matrix-header">Catastrophic (5)</div>
+                  
+                  <div class="matrix-cell matrix-header">Almost Certain (5)</div>
+                  <div class="matrix-cell risk-medium">5</div>
+                  <div class="matrix-cell risk-high">10</div>
+                  <div class="matrix-cell risk-high">15</div>
+                  <div class="matrix-cell risk-critical">20</div>
+                  <div class="matrix-cell risk-critical">25</div>
+                  
+                  <div class="matrix-cell matrix-header">Likely (4)</div>
+                  <div class="matrix-cell risk-medium">4</div>
+                  <div class="matrix-cell risk-medium">8</div>
+                  <div class="matrix-cell risk-high">12</div>
+                  <div class="matrix-cell risk-high">16</div>
+                  <div class="matrix-cell risk-critical">20</div>
+                  
+                  <div class="matrix-cell matrix-header">Possible (3)</div>
+                  <div class="matrix-cell risk-low">3</div>
+                  <div class="matrix-cell risk-medium">6</div>
+                  <div class="matrix-cell risk-medium">9</div>
+                  <div class="matrix-cell risk-high">12</div>
+                  <div class="matrix-cell risk-high">15</div>
+                  
+                  <div class="matrix-cell matrix-header">Unlikely (2)</div>
+                  <div class="matrix-cell risk-low">2</div>
+                  <div class="matrix-cell risk-low">4</div>
+                  <div class="matrix-cell risk-medium">6</div>
+                  <div class="matrix-cell risk-medium">8</div>
+                  <div class="matrix-cell risk-high">10</div>
+                  
+                  <div class="matrix-cell matrix-header">Rare (1)</div>
+                  <div class="matrix-cell risk-negligible">1</div>
+                  <div class="matrix-cell risk-low">2</div>
+                  <div class="matrix-cell risk-low">3</div>
+                  <div class="matrix-cell risk-medium">4</div>
+                  <div class="matrix-cell risk-medium">5</div>
+              </div>
+              
+              <div>
+                  <table class="table" id="risksTable">
+                      <thead>
+                          <tr>
+                              <th>Asset</th>
+                              <th>Risk Scenario</th>
+                              <th>Likelihood</th>
+                              <th>Impact</th>
+                              <th>Risk Score</th>
+                              <th>Risk Level</th>
+                              <th>Actions</th>
+                          </tr>
+                      </thead>
+                      <tbody>
+                          <!-- Risk list will be generated here -->
+                      </tbody>
+                  </table>
+              </div>
+              
+              <div class="actions">
+                  <button type="button" class="btn" id="backToVulnerabilities">Back</button>
+                  <button type="button" class="btn btn-success" id="nextToMitigation">Continue</button>
+              </div>
+          </div>
+      </div>
+      
+      <!-- Mitigation Planning Tab -->
+      <div id="mitigation" class="tab-content">
+          <div class="card">
+              <h2>Mitigation Planning</h2>
+              <p>Develop strategies to address the identified risks. Focus on high and critical risks first.</p>
+              
+              <div class="form-group">
+                  <div class="add-item-row">
+                      <select id="mitigationRisk">
+                          <option value="">Select Risk</option>
+                          <!-- Risks will be populated here -->
+                      </select>
+                      <input type="text" id="mitigationStrategy" placeholder="Mitigation Strategy">
+                      <select id="mitigationApproach">
+                          <option value="">Approach</option>
+                          <option value="Accept">Accept</option>
+                          <option value="Transfer">Transfer</option>
+                          <option value="Mitigate">Mitigate</option>
+                          <option value="Avoid">Avoid</option>
+                      </select>
+                      <input type="text" id="mitigationOwner" placeholder="Responsible Party">
+                      <input type="date" id="mitigationDueDate" placeholder="Due Date">
+                      <button type="button" class="btn" id="addMitigationBtn">Add Strategy</button>
+                  </div>
+              </div>
+              
+              <div>
+                  <table class="table" id="mitigationTable">
+                      <thead>
+                          <tr>
+                              <th>Risk</th>
+                              <th>Risk Level</th>
+                              <th>Mitigation Strategy</th>
+                              <th>Approach</th>
+                              <th>Owner</th>
+                              <th>Due Date</th>
+                              <th>Actions</th>
+                          </tr>
+                      </thead>
+                      <tbody>
+                          <!-- Mitigation list will be generated here -->
+                      </tbody>
+                  </table>
+              </div>
+              
+              <div class="actions">
+                  <button type="button" class="btn" id="backToRisks">Back</button>
+                  <button type="button" class="btn btn-success" id="nextToReports">Continue</button>
+              </div>
+          </div>
+      </div>
+      
+      <!-- Reports Tab -->
+      <div id="reports" class="tab-content">
+          <div class="card">
+              <h2>Reports & Export</h2>
+              <p>Generate reports based on your risk assessment and export data for documentation.</p>
+              
+              <div class="exportButtons">
+                  <button type="button" class="btn" id="generateReportBtn">Generate Full Report</button>
+                  <button type="button" class="btn" id="generateExecSummaryBtn">Executive Summary</button>
+                  <button type="button" class="btn" id="exportPdfBtn">Export to PDF</button>
+              </div>
+              
+              <div class="form-group">
+                  <label for="reportOutput">Report Preview:</label>
+                  <div id="reportOutput" class="card" style="min-height: 300px; white-space: pre-wrap; overflow: auto; padding: 15px; background-color: #f9f9f9;">
+                      <!-- Report content will be generated here -->
+                  </div>
+              </div>
+              
+              <div class="actions">
+                  <button type="button" class="btn" id="backToMitigation">Back</button>
+                  <button type="button" class="btn btn-success" id="completeAssessment">Complete Assessment</button>
+              </div>
+          </div>
+      </div>
+  </div>
+
+  <script>
+      // Application Data
+      const appData = {
+          organization: {
+              name: '',
+              department: '',
+              assessor: '',
+              assessmentDate: '',
+              scope: ''
+          },
+          assets: [],
+          threats: [],
+          vulnerabilities: [],
+          risks: [],
+          mitigationStrategies: []
+      };
+      
+      // DOM Elements
+      const tabLinks = document.querySelectorAll('.tab-link');
+      const tabContents = document.querySelectorAll('.tab-content');
+      const progressSteps = document.querySelectorAll('.progress-step');
+      
+      // Initialize the application
+      document.addEventListener('DOMContentLoaded', function() {
+          initializeTabNavigation();
+          initializeFormHandlers();
+          initializeDataHandlers();
+          document.getElementById('vulnAsset')?.addEventListener('change', populateThreatDropdowns);
+          document.getElementById('riskAsset')?.addEventListener('change', populateVulnerabilityDropdowns);
+      });
+      
+      // Tab Navigation
+      function initializeTabNavigation() {
+          tabLinks.forEach(tab => {
+              tab.addEventListener('click', function() {
+                  const tabId = this.getAttribute('data-tab');
+                  tabLinks.forEach(t => t.classList.remove('active'));
+                  this.classList.add('active');
+                  tabContents.forEach(content => {
+                      content.classList.remove('active');
+                  });
+                  document.getElementById(tabId).classList.add('active');
+                  updateProgressBar(tabId);
+              });
+          });
+          
+          document.getElementById('nextToAssets').addEventListener('click', () => {
+              if (validateOrganizationForm()) {
+                  saveOrganizationData();
+                  activateTab('assets');
+              }
+          });
+          
+          document.getElementById('backToIntro').addEventListener('click', () => {
+              activateTab('intro');
+          });
+          
+          document.getElementById('nextToThreats').addEventListener('click', () => {
+              activateTab('threats');
+              populateAssetDropdowns();
+          });
+          
+          document.getElementById('backToAssets').addEventListener('click', () => {
+              activateTab('assets');
+          });
+          
+          document.getElementById('nextToVulnerabilities').addEventListener('click', () => {
+              activateTab('vulnerabilities');
+              populateAssetDropdowns();
+              populateThreatDropdowns();
+          });
+          
+          document.getElementById('backToThreats').addEventListener('click', () => {
+              activateTab('threats');
+          });
+          
+          document.getElementById('nextToRisks').addEventListener('click', () => {
+              activateTab('risks');
+              populateAssetDropdowns();
+              populateVulnerabilityDropdowns();
+          });
+          
+          document.getElementById('backToVulnerabilities').addEventListener('click', () => {
+              activateTab('vulnerabilities');
+          });
+          
+          document.getElementById('nextToMitigation').addEventListener('click', () => {
+              activateTab('mitigation');
+              populateRiskDropdowns();
+          });
+          
+          document.getElementById('backToRisks').addEventListener('click', () => {
+              activateTab('risks');
+          });
+          
+          document.getElementById('nextToReports').addEventListener('click', () => {
+              activateTab('reports');
+              generateFullReport();
+          });
+          
+          document.getElementById('backToMitigation').addEventListener('click', () => {
+              activateTab('mitigation');
+          });
+          
+          document.getElementById('completeAssessment').addEventListener('click', () => {
+              alert('Assessment completed. You can export your data or generate reports as needed.');
+          });
+      }
+      
+      function activateTab(tabId) {
+          tabLinks.forEach(t => t.classList.remove('active'));
+          document.querySelector(`.tab-link[data-tab="${tabId}"]`).classList.add('active');
+          tabContents.forEach(content => {
+              content.classList.remove('active');
+          });
+          document.getElementById(tabId).classList.add('active');
+          updateProgressBar(tabId);
+      }
+      
+      function updateProgressBar(currentTabId) {
+          progressSteps.forEach(step => {
+              const stepId = step.getAttribute('data-step');
+              step.classList.remove('active', 'completed');
+              if (stepId === currentTabId) {
+                  step.classList.add('active');
+              } else {
+                  const stepIndex = Array.from(progressSteps).findIndex(s => s.getAttribute('data-step') === stepId);
+                  const currentIndex = Array.from(progressSteps).findIndex(s => s.getAttribute('data-step') === currentTabId);
+                  if (stepIndex < currentIndex) {
+                      step.classList.add('completed');
+                  }
+              }
+          });
+      }
+      
+      // Form Handlers
+      function initializeFormHandlers() {
+          document.getElementById('organizationForm').addEventListener('submit', (e) => {
+              e.preventDefault();
+              if (validateOrganizationForm()) {
+                  saveOrganizationData();
+                  activateTab('assets');
+              }
+          });
+          
+          document.getElementById('addAssetBtn').addEventListener('click', addAsset);
+          document.getElementById('addThreatBtn').addEventListener('click', addThreat);
+          document.getElementById('addVulnBtn').addEventListener('click', addVulnerability);
+          document.getElementById('addRiskBtn').addEventListener('click', addRisk);
+          document.getElementById('addMitigationBtn').addEventListener('click', addMitigation);
+          document.getElementById('generateReportBtn').addEventListener('click', generateFullReport);
+          document.getElementById('generateExecSummaryBtn').addEventListener('click', generateExecutiveSummary);
+          document.getElementById('exportPdfBtn').addEventListener('click', generatePdfReport);
+          document.getElementById('saveDataBtn').addEventListener('click', saveDataToLocal);
+          document.getElementById('loadDataBtn').addEventListener('click', loadDataFromLocal);
+      }
+      
+      // Validation functions
+      function validateOrganizationForm() {
+          const orgName = document.getElementById('orgName').value;
+          const assessor = document.getElementById('assessor').value;
+          const assessmentDate = document.getElementById('assessmentDate').value;
+          
+          if (!orgName) {
+              alert('Please enter an organization name');
+              return false;
+          }
+          
+          if (!assessor) {
+              alert('Please enter an assessment lead name');
+              return false;
+          }
+          
+          if (!assessmentDate) {
+              alert('Please enter an assessment date');
+              return false;
+          }
+          
+          return true;
+      }
+      
+      // Data Handlers
+      function initializeDataHandlers() {
+          checkForSavedData();
+      }
+      
+      function saveOrganizationData() {
+          appData.organization = {
+              name: document.getElementById('orgName').value,
+              department: document.getElementById('department').value,
+              assessor: document.getElementById('assessor').value,
+              assessmentDate: document.getElementById('assessmentDate').value,
+              scope: document.getElementById('scope').value
+          };
+      }
+      
+      function addAsset() {
+          const assetName = document.getElementById('assetName').value;
+          const assetType = document.getElementById('assetType').value;
+          const assetCriticality = document.getElementById('assetCriticality').value;
+          
+          if (!assetName || !assetType || !assetCriticality) {
+              alert('Please fill in all asset fields');
+              return;
+          }
+          
+          const asset = {
+              id: generateId(),
+              name: assetName,
+              type: assetType,
+              criticality: assetCriticality
+          };
+          
+          appData.assets.push(asset);
+          renderAssets();
+          clearAssetForm();
+      }
+      
+      function addThreat() {
+          const assetId = document.getElementById('threatAsset').value;
+          const threatName = document.getElementById('threatName').value;
+          const threatCategory = document.getElementById('threatCategory').value;
+          const threatLikelihood = document.getElementById('threatLikelihood').value;
+          
+          if (!assetId || !threatName || !threatCategory || !threatLikelihood) {
+              alert('Please fill in all threat fields');
+              return;
+          }
+          
+          const asset = appData.assets.find(a => a.id === assetId);
+          
+          const threat = {
+              id: generateId(),
+              assetId: assetId,
+              assetName: asset.name,
+              name: threatName,
+              category: threatCategory,
+              likelihood: threatLikelihood
+          };
+          
+          appData.threats.push(threat);
+          renderThreats();
+          clearThreatForm();
+      }
+      
+      function addVulnerability() {
+          const assetId = document.getElementById('vulnAsset').value;
+          const threatId = document.getElementById('vulnThreat').value;
+          const vulnName = document.getElementById('vulnName').value;
+          const vulnSeverity = document.getElementById('vulnSeverity').value;
+          
+          if (!assetId || !threatId || !vulnName || !vulnSeverity) {
+              alert('Please fill in all vulnerability fields');
+              return;
+          }
+          
+          const asset = appData.assets.find(a => a.id === assetId);
+          const threat = appData.threats.find(t => t.id === threatId);
+          
+          const vulnerability = {
+              id: generateId(),
+              assetId: assetId,
+              assetName: asset.name,
+              threatId: threatId,
+              threatName: threat.name,
+              name: vulnName,
+              severity: vulnSeverity
+          };
+          
+          appData.vulnerabilities.push(vulnerability);
+          renderVulnerabilities();
+          clearVulnerabilityForm();
+      }
+      
+      function addRisk() {
+          const assetId = document.getElementById('riskAsset').value;
+          const vulnerabilityId = document.getElementById('riskVulnerability').value;
+          const riskDescription = document.getElementById('riskDescription').value;
+          const likelihood = document.getElementById('riskLikelihood').value;
+          const impact = document.getElementById('riskImpact').value;
+          
+          if (!assetId || !vulnerabilityId || !riskDescription || !likelihood || !impact) {
+              alert('Please fill in all risk fields');
+              return;
+          }
+          
+          const asset = appData.assets.find(a => a.id === assetId);
+          const vulnerability = appData.vulnerabilities.find(v => v.id === vulnerabilityId);
+          
+          const riskScore = parseInt(likelihood) * parseInt(impact);
+          const riskLevel = calculateRiskLevel(riskScore);
+          
+          const risk = {
+              id: generateId(),
+              assetId: assetId,
+              assetName: asset.name,
+              vulnerabilityId: vulnerabilityId,
+              vulnerabilityName: vulnerability.name,
+              description: riskDescription,
+              likelihood: parseInt(likelihood),
+              impact: parseInt(impact),
+              score: riskScore,
+              level: riskLevel
+          };
+          
+          appData.risks.push(risk);
+          renderRisks();
+          clearRiskForm();
+      }
+      
+      function addMitigation() {
+          const riskId = document.getElementById('mitigationRisk').value;
+          const strategy = document.getElementById('mitigationStrategy').value;
+          const approach = document.getElementById('mitigationApproach').value;
+          const owner = document.getElementById('mitigationOwner').value;
+          const dueDate = document.getElementById('mitigationDueDate').value;
+          
+          if (!riskId || !strategy || !approach || !owner || !dueDate) {
+              alert('Please fill in all mitigation fields');
+              return;
+          }
+          
+          const risk = appData.risks.find(r => r.id === riskId);
+          
+          const mitigation = {
+              id: generateId(),
+              riskId: riskId,
+              riskDescription: risk.description,
+              riskLevel: risk.level,
+              strategy: strategy,
+              approach: approach,
+              owner: owner,
+              dueDate: dueDate,
+              status: 'Not Started'
+          };
+          
+          appData.mitigationStrategies.push(mitigation);
+          renderMitigations();
+          clearMitigationForm();
+      }
+      
+      function calculateRiskLevel(score) {
+          if (score >= 20) return 'Critical';
+          if (score >= 10) return 'High';
+          if (score >= 5) return 'Medium';
+          if (score >= 3) return 'Low';
+          return 'Negligible';
+      }
+      
+      // Rendering functions
+      function renderAssets() {
+          const tbody = document.querySelector('#assetsTable tbody');
+          tbody.innerHTML = '';
+          appData.assets.forEach(asset => {
+              const tr = document.createElement('tr');
+              tr.innerHTML = `
+                  <td>${asset.name}</td>
+                  <td>${asset.type}</td>
+                  <td>${asset.criticality}</td>
+                  <td>
+                      <button class="btn btn-danger btn-sm" onclick="deleteAsset('${asset.id}')">Delete</button>
+                  </td>
+              `;
+              tbody.appendChild(tr);
+          });
+      }
+      
+      function renderThreats() {
+          const tbody = document.querySelector('#threatsTable tbody');
+          tbody.innerHTML = '';
+          appData.threats.forEach(threat => {
+              const tr = document.createElement('tr');
+              tr.innerHTML = `
+                  <td>${threat.assetName}</td>
+                  <td>${threat.name}</td>
+                  <td>${threat.category}</td>
+                  <td>${threat.likelihood}</td>
+                  <td>
+                      <button class="btn btn-danger btn-sm" onclick="deleteThreat('${threat.id}')">Delete</button>
+                  </td>
+              `;
+              tbody.appendChild(tr);
+          });
+      }
+      
+      function renderVulnerabilities() {
+          const tbody = document.querySelector('#vulnerabilitiesTable tbody');
+          tbody.innerHTML = '';
+          appData.vulnerabilities.forEach(vuln => {
+              const tr = document.createElement('tr');
+              tr.innerHTML = `
+                  <td>${vuln.assetName}</td>
+                  <td>${vuln.threatName}</td>
+                  <td>${vuln.name}</td>
+                  <td>${vuln.severity}</td>
+                  <td>
+                      <button class="btn btn-danger btn-sm" onclick="deleteVulnerability('${vuln.id}')">Delete</button>
+                  </td>
+              `;
+              tbody.appendChild(tr);
+          });
+      }
+      
+      function renderRisks() {
+          const tbody = document.querySelector('#risksTable tbody');
+          tbody.innerHTML = '';
+          appData.risks.forEach(risk => {
+              const tr = document.createElement('tr');
+              let badgeClass = '';
+              switch (risk.level) {
+                  case 'Critical': badgeClass = 'badge-high'; break;
+                  case 'High': badgeClass = 'badge-high'; break;
+                  case 'Medium': badgeClass = 'badge-medium'; break;
+                  case 'Low': badgeClass = 'badge-low'; break;
+                  default: badgeClass = ''; break;
+              }
+              tr.innerHTML = `
+                  <td>${risk.assetName}</td>
+                  <td>${risk.description}</td>
+                  <td>${risk.likelihood}</td>
+                  <td>${risk.impact}</td>
+                  <td>${risk.score}</td>
+                  <td><span class="badge ${badgeClass}">${risk.level}</span></td>
+                  <td>
+                      <button class="btn btn-danger btn-sm" onclick="deleteRisk('${risk.id}')">Delete</button>
+                  </td>
+              `;
+              tbody.appendChild(tr);
+          });
+      }
+      
+      function renderMitigations() {
+          const tbody = document.querySelector('#mitigationTable tbody');
+          tbody.innerHTML = '';
+          appData.mitigationStrategies.forEach(mitigation => {
+              const tr = document.createElement('tr');
+              let badgeClass = '';
+              switch (mitigation.riskLevel) {
+                  case 'Critical': badgeClass = 'badge-high'; break;
+                  case 'High': badgeClass = 'badge-high'; break;
+                  case 'Medium': badgeClass = 'badge-medium'; break;
+                  case 'Low': badgeClass = 'badge-low'; break;
+                  default: badgeClass = ''; break;
+              }
+              tr.innerHTML = `
+                  <td>${mitigation.riskDescription}</td>
+                  <td><span class="badge ${badgeClass}">${mitigation.riskLevel}</span></td>
+                  <td>${mitigation.strategy}</td>
+                  <td>${mitigation.approach}</td>
+                  <td>${mitigation.owner}</td>
+                  <td>${mitigation.dueDate}</td>
+                  <td>
+                      <button class="btn btn-danger btn-sm" onclick="deleteMitigation('${mitigation.id}')">Delete</button>
+                  </td>
+              `;
+              tbody.appendChild(tr);
+          });
+      }
+      
+      // Utility functions
+      function clearAssetForm() {
+          document.getElementById('assetName').value = '';
+          document.getElementById('assetType').value = '';
+          document.getElementById('assetCriticality').value = '';
+      }
+      
+      function clearThreatForm() {
+          document.getElementById('threatName').value = '';
+          document.getElementById('threatCategory').value = '';
+          document.getElementById('threatLikelihood').value = '';
+      }
+      
+      function clearVulnerabilityForm() {
+          document.getElementById('vulnName').value = '';
+          document.getElementById('vulnSeverity').value = '';
+      }
+      
+      function clearRiskForm() {
+          document.getElementById('riskDescription').value = '';
+          document.getElementById('riskLikelihood').value = '';
+          document.getElementById('riskImpact').value = '';
+      }
+      
+      function clearMitigationForm() {
+          document.getElementById('mitigationStrategy').value = '';
+          document.getElementById('mitigationApproach').value = '';
+          document.getElementById('mitigationOwner').value = '';
+          document.getElementById('mitigationDueDate').value = '';
+      }
+      
+      function generateId() {
+          return Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
+      }
+      
+      // Dropdown population functions
+      function populateAssetDropdowns() {
+          const assetSelects = [
+              document.getElementById('threatAsset'),
+              document.getElementById('vulnAsset'),
+              document.getElementById('riskAsset')
+          ];
+          assetSelects.forEach(select => {
+              if (select) {
+                  while (select.options.length > 1) {
+                      select.remove(1);
+                  }
+                  appData.assets.forEach(asset => {
+                      const option = document.createElement('option');
+                      option.value = asset.id;
+                      option.textContent = asset.name;
+                      select.appendChild(option);
+                  });
+              }
+          });
+      }
+      
+      function populateThreatDropdowns() {
+          const threatSelect = document.getElementById('vulnThreat');
+          if (!threatSelect) return;
+          const assetId = document.getElementById('vulnAsset').value;
+          while (threatSelect.options.length > 1) {
+              threatSelect.remove(1);
+          }
+          const filteredThreats = appData.threats.filter(threat => threat.assetId === assetId);
+          filteredThreats.forEach(threat => {
+              const option = document.createElement('option');
+              option.value = threat.id;
+              option.textContent = threat.name;
+              threatSelect.appendChild(option);
+          });
+      }
+      
+      function populateVulnerabilityDropdowns() {
+          const vulnSelect = document.getElementById('riskVulnerability');
+          if (!vulnSelect) return;
+          const assetId = document.getElementById('riskAsset').value;
+          while (vulnSelect.options.length > 1) {
+              vulnSelect.remove(1);
+          }
+          const filteredVulns = appData.vulnerabilities.filter(vuln => vuln.assetId === assetId);
+          filteredVulns.forEach(vuln => {
+              const option = document.createElement('option');
+              option.value = vuln.id;
+              option.textContent = vuln.name;
+              vulnSelect.appendChild(option);
+          });
+      }
+      
+      function populateRiskDropdowns() {
+          const riskSelect = document.getElementById('mitigationRisk');
+          if (!riskSelect) return;
+          while (riskSelect.options.length > 1) {
+              riskSelect.remove(1);
+          }
+          appData.risks.forEach(risk => {
+              const option = document.createElement('option');
+              option.value = risk.id;
+              option.textContent = `${risk.description} (${risk.level})`;
+              riskSelect.appendChild(option);
+          });
+      }
+      
+      // Delete functions
+      function deleteAsset(id) {
+          if (confirm('Are you sure you want to delete this asset? This will also delete associated threats, vulnerabilities, and risks.')) {
+              appData.assets = appData.assets.filter(asset => asset.id !== id);
+              appData.threats = appData.threats.filter(threat => threat.assetId !== id);
+              appData.vulnerabilities = appData.vulnerabilities.filter(vuln => vuln.assetId !== id);
+              const riskIds = appData.risks.filter(risk => risk.assetId === id).map(risk => risk.id);
+              appData.risks = appData.risks.filter(risk => risk.assetId !== id);
+              appData.mitigationStrategies = appData.mitigationStrategies.filter(
+                  mitigation => !riskIds.includes(mitigation.riskId)
+              );
+              renderAssets();
+              renderThreats();
+              renderVulnerabilities();
+              renderRisks();
+              renderMitigations();
+          }
+      }
+      
+      function deleteThreat(id) {
+          if (confirm('Are you sure you want to delete this threat? This will also delete associated vulnerabilities and risks.')) {
+              appData.threats = appData.threats.filter(threat => threat.id !== id);
+              const vulnIds = appData.vulnerabilities.filter(vuln => vuln.threatId === id).map(vuln => vuln.id);
+              appData.vulnerabilities = appData.vulnerabilities.filter(vuln => vuln.threatId !== id);
+              const riskIds = appData.risks.filter(risk => vulnIds.includes(risk.vulnerabilityId)).map(risk => risk.id);
+              appData.risks = appData.risks.filter(risk => !vulnIds.includes(risk.vulnerabilityId));
+              appData.mitigationStrategies = appData.mitigationStrategies.filter(
+                  mitigation => !riskIds.includes(mitigation.riskId)
+              );
+              renderThreats();
+              renderVulnerabilities();
+              renderRisks();
+              renderMitigations();
+          }
+      }
+      
+      function deleteVulnerability(id) {
+          if (confirm('Are you sure you want to delete this vulnerability? This will also delete associated risks.')) {
+              appData.vulnerabilities = appData.vulnerabilities.filter(vuln => vuln.id !== id);
+              const riskIds = appData.risks.filter(risk => risk.vulnerabilityId === id).map(risk => risk.id);
+              appData.risks = appData.risks.filter(risk => risk.vulnerabilityId !== id);
+              appData.mitigationStrategies = appData.mitigationStrategies.filter(
+                  mitigation => !riskIds.includes(mitigation.riskId)
+              );
+              renderVulnerabilities();
+              renderRisks();
+              renderMitigations();
+          }
+      }
+      
+      function deleteRisk(id) {
+          if (confirm('Are you sure you want to delete this risk? This will also delete associated mitigations.')) {
+              appData.risks = appData.risks.filter(risk => risk.id !== id);
+              appData.mitigationStrategies = appData.mitigationStrategies.filter(
+                  mitigation => mitigation.riskId !== id
+              );
+              renderRisks();
+              renderMitigations();
+          }
+      }
+      
+      function deleteMitigation(id) {
+          if (confirm('Are you sure you want to delete this mitigation strategy?')) {
+              appData.mitigationStrategies = appData.mitigationStrategies.filter(
+                  mitigation => mitigation.id !== id
+              );
+              renderMitigations();
+          }
+      }
+      
+      // Report Generation
+      function generateFullReport() {
+          const reportOutput = document.getElementById('reportOutput');
+          let report = `# OCTAVE Risk Assessment Report
+Organization: ${appData.organization.name}
+Department: ${appData.organization.department}
+Assessment Lead: ${appData.organization.assessor}
+Date: ${appData.organization.assessmentDate}
+
+## Assessment Scope
+${appData.organization.scope}
+
+## Executive Summary
+This risk assessment identified ${appData.assets.length} critical assets, ${appData.threats.length} potential threats, and ${appData.vulnerabilities.length} vulnerabilities leading to ${appData.risks.length} risk scenarios.
+
+The highest risks identified are:
+${getHighRiskSummary()}
+
+## Critical Assets
+${getAssetsSummary()}
+
+## Threats
+${getThreatsSummary()}
+
+## Vulnerabilities
+${getVulnerabilitiesSummary()}
+
+## Risk Assessment
+${getRisksSummary()}
+
+## Mitigation Strategies
+${getMitigationSummary()}
+
+## Conclusion
+${getConclusion()}
+`;
+          reportOutput.textContent = report;
+      }
+      
+      function generateExecutiveSummary() {
+          const reportOutput = document.getElementById('reportOutput');
+          const riskCounts = {
+              'Critical': appData.risks.filter(r => r.level === 'Critical').length,
+              'High': appData.risks.filter(r => r.level === 'High').length,
+              'Medium': appData.risks.filter(r => r.level === 'Medium').length,
+              'Low': appData.risks.filter(r => r.level === 'Low').length,
+              'Negligible': appData.risks.filter(r => r.level === 'Negligible').length
+          };
+          let summary = `# Executive Summary: OCTAVE Risk Assessment
+Organization: ${appData.organization.name}
+Date: ${appData.organization.assessmentDate}
+
+## Assessment Overview
+This assessment identified ${appData.assets.length} critical assets, resulting in ${appData.risks.length} risk scenarios.
+
+## Risk Profile
+- Critical Risks: ${riskCounts['Critical']}
+- High Risks: ${riskCounts['High']}
+- Medium Risks: ${riskCounts['Medium']}
+- Low Risks: ${riskCounts['Low']}
+- Negligible Risks: ${riskCounts['Negligible']}
+
+## Top Risks
+${getHighRiskSummary()}
+
+## Mitigation Status
+Total mitigation strategies: ${appData.mitigationStrategies.length}
+
+## Recommendations
+${getRecommendations()}
+`;
+          reportOutput.textContent = summary;
+      }
+      
+      function getHighRiskSummary() {
+          const highRisks = appData.risks.filter(risk => 
+              risk.level === 'Critical' || risk.level === 'High'
+          ).sort((a, b) => b.score - a.score).slice(0, 5);
+          if (highRisks.length === 0) {
+              return '- No high or critical risks were identified.\n';
+          }
+          return highRisks.map(risk => 
+              `- [${risk.level}] ${risk.description} (Risk Score: ${risk.score})`
+          ).join('\n');
+      }
+      
+      function getAssetsSummary() {
+          if (appData.assets.length === 0) {
+              return 'No assets have been identified.\n';
+          }
+          return appData.assets.map(asset => 
+              `- ${asset.name} (${asset.type}) - Criticality: ${asset.criticality}`
+          ).join('\n');
+      }
+      
+      function getThreatsSummary() {
+          if (appData.threats.length === 0) {
+              return 'No threats have been identified.\n';
+          }
+          return appData.threats.map(threat => 
+              `- ${threat.name} (${threat.category}) - Affects: ${threat.assetName} - Likelihood: ${threat.likelihood}`
+          ).join('\n');
+      }
+      
+      function getVulnerabilitiesSummary() {
+          if (appData.vulnerabilities.length === 0) {
+              return 'No vulnerabilities have been identified.\n';
+          }
+          return appData.vulnerabilities.map(vuln => 
+              `- ${vuln.name} (Severity: ${vuln.severity}) - Affects: ${vuln.assetName} - Related to: ${vuln.threatName}`
+          ).join('\n');
+      }
+      
+      function getRisksSummary() {
+          if (appData.risks.length === 0) {
+              return 'No risks have been assessed.\n';
+          }
+          return appData.risks.map(risk => 
+              `- [${risk.level}] ${risk.description} - Asset: ${risk.assetName} - Score: ${risk.score} (Likelihood: ${risk.likelihood}, Impact: ${risk.impact})`
+          ).join('\n');
+      }
+      
+      function getMitigationSummary() {
+          if (appData.mitigationStrategies.length === 0) {
+              return 'No mitigation strategies have been developed.\n';
+          }
+          return appData.mitigationStrategies.map(mitigation => 
+              `- ${mitigation.strategy} (${mitigation.approach}) - For Risk: ${mitigation.riskDescription} - Owner: ${mitigation.owner} - Due: ${mitigation.dueDate}`
+          ).join('\n');
+      }
+      
+      function getConclusion() {
+          const highRisks = appData.risks.filter(risk => 
+              risk.level === 'Critical' || risk.level === 'High'
+          );
+          const mediumRisks = appData.risks.filter(risk => risk.level === 'Medium');
+          const lowRisks = appData.risks.filter(risk => 
+              risk.level === 'Low' || risk.level === 'Negligible'
+          );
+          return `This assessment identified ${highRisks.length} high or critical risks, ${mediumRisks.length} medium risks, and ${lowRisks.length} low or negligible risks. The organization should prioritize addressing the high and critical risks through the mitigation strategies outlined in this report.`;
+      }
+      
+      function getRecommendations() {
+          const highRisks = appData.risks.filter(risk => 
+              risk.level === 'Critical' || risk.level === 'High'
+          );
+          const mitigatedRiskIds = appData.mitigationStrategies.map(m => m.riskId);
+          const unmitigatedHighRisks = highRisks.filter(risk => 
+              !mitigatedRiskIds.includes(risk.id)
+          );
+          let recommendations = '';
+          if (unmitigatedHighRisks.length > 0) {
+              recommendations += `1. Develop mitigation strategies for the ${unmitigatedHighRisks.length} high/critical risks that currently lack mitigations.\n`;
+          }
+          recommendations += `2. Review and update this risk assessment regularly (at least annually).\n`;
+          recommendations += `3. Implement security awareness training for all staff.\n`;
+          recommendations += `4. Establish an incident response plan that addresses the identified high risks.\n`;
+          return recommendations;
+      }
+      
+      // PDF Export Function
+      function generatePdfReport() {
+          // Generate the full report to update the preview
+          generateFullReport();
+          const reportText = document.getElementById('reportOutput').textContent;
+          const { jsPDF } = window.jspdf;
+          const doc = new jsPDF();
+          const lines = doc.splitTextToSize(reportText, 180);
+          doc.text(lines, 10, 10);
+          doc.save("octave_risk_assessment_report.pdf");
+      }
+      
+      // Save and Load functions
+      function saveDataToLocal() {
+          try {
+              const jsonData = JSON.stringify(appData);
+              localStorage.setItem('octaveRiskData', jsonData);
+              alert('Data saved successfully!');
+          } catch (error) {
+              alert('Error saving data: ' + error.message);
+          }
+      }
+      
+      function loadDataFromLocal() {
+          try {
+              const jsonData = localStorage.getItem('octaveRiskData');
+              if (!jsonData) {
+                  alert('No saved data found.');
+                  return;
+              }
+              const loadedData = JSON.parse(jsonData);
+              appData.organization = loadedData.organization || appData.organization;
+              appData.assets = loadedData.assets || [];
+              appData.threats = loadedData.threats || [];
+              appData.vulnerabilities = loadedData.vulnerabilities || [];
+              appData.risks = loadedData.risks || [];
+              appData.mitigationStrategies = loadedData.mitigationStrategies || [];
+              updateOrganizationForm();
+              renderAssets();
+              renderThreats();
+              renderVulnerabilities();
+              renderRisks();
+              renderMitigations();
+              alert('Data loaded successfully!');
+          } catch (error) {
+              alert('Error loading data: ' + error.message);
+          }
+      }
+      
+      function updateOrganizationForm() {
+          document.getElementById('orgName').value = appData.organization.name;
+          document.getElementById('department').value = appData.organization.department;
+          document.getElementById('assessor').value = appData.organization.assessor;
+          document.getElementById('assessmentDate').value = appData.organization.assessmentDate;
+          document.getElementById('scope').value = appData.organization.scope;
+      }
+      
+      function checkForSavedData() {
+          if (localStorage.getItem('octaveRiskData')) {
+              if (confirm('Saved data found. Would you like to load it?')) {
+                  loadDataFromLocal();
+              }
+          }
+      }
+      
+      // Initialize global event handlers for delete functions
+      window.deleteAsset = deleteAsset;
+      window.deleteThreat = deleteThreat;
+      window.deleteVulnerability = deleteVulnerability;
+      window.deleteRisk = deleteRisk;
+      window.deleteMitigation = deleteMitigation;
+  </script>
+</body>
+</html>
